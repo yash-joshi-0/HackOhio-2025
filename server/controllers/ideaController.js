@@ -39,7 +39,7 @@ exports.getTopIdeaForUser = async (req, res) => {
                 return res.status(400).json({ message: 'Next unvoted idea not found' });
             }
     
-            res.status(200).json({ message: 'Found idea'}, {idea: idea});
+            return res.status(200).json({ message: 'Found idea'}, {idea: idea});
         } catch (error) {
             console.error('Error finding idea', error);
             res.status(500).json({ message: 'Server error' });
