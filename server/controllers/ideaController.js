@@ -1,7 +1,6 @@
 const Idea = require('../models/idea');
 const Vote = require('../models/vote');
 const User = require('../models/user');
-const bcrypt = require('bcryptjs');
 
 // create Idea
 exports.createIdea = async (req, res) => {
@@ -26,11 +25,12 @@ exports.getTopIdeaForUser = async (req, res) => {
                    {
                     model: Vote,
                     required: false, // LEFT JOIN
-                    where: { userId: userId },
+                    where: { userId: userId, userId: },
                     },
                 ],
                 where: {
                     "$Votes.id$": null, // only where the user hasn’t voted
+                    user_id: { [Op.ne]: userId }, // user is NOT the idea owner
                 },
                 order: [["crits", "DESC"]],
                 limit: 1,
@@ -49,10 +49,16 @@ exports.getTopIdeaForUser = async (req, res) => {
 exports.deleteIdea = async (req, res) => {
     const { ideaId } = req.body;
     try {
-        // Check if user already exists
-        await Idea.destroy({ where: { ideaId: ideaId } });
+        const check = await Idea.findOne({where: {ideaId: ideaId}});
+        if(check){ //make sure idea exists
+            await Idea.destroy({ where: { ideaId: ideaId } });
+            res.status(201).json({ message: 'Idea delete successful'});
+        }
+        else {
+            res.status(400).json({message:'Idea does not exist'});
+        }
+        
 
-        res.status(201).json({ message: 'Idea delete successful', user: { id: newUser.id, username: newUser.username } });
     } catch (error) {
         console.error('Error deleting idea:', error);
         res.status(500).json({ message: 'Server error' });
