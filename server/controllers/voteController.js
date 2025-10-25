@@ -8,6 +8,16 @@ exports.createVote = async (req, res) => {
     try {
         const ideaOwner = await Idea.findOne({attributes: [userId]}, {where: {ideaId: ideaId}}); //get owner of idea
         if(userId != ideaOwner){ //ensure the person leaving the vote does not own the idea
+            if (Math.random() < 0.05) { //5% chance of idea losing a crit
+                const curIdeaCrits = await Idea.findOne({attributes: ['ideaCrits']},{where: {ideaId: ideaId}});
+                const newIdeaCrits = curIdeaCrits - 1;
+                await Idea.update({ideaCrits: newIdeaCrits},{where: {ideaId: ideaId}});
+            }
+            if (Math.random() < 0.10) { //10% chance user gains a crit
+                const curUserCrits = await User.findOne({attributes: ['crits']}, {where: {userId: userId}});
+                const newUserCrits = curUserCrits - 1;
+                await User.update({crits: newUserCrits},{where: {userId: userId}});
+            }
             const newVote = await Vote.create({userId: userId}, {ideaId: ideaId}, {isLike: isLike});
         } else{ //userid equals owner of idea. not allowed
             res.status(400).json({ message: 'User cannot leave a vote on their own idea' });
