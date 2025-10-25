@@ -4,12 +4,12 @@ const User = require('../models/user');
 
 // create Idea
 exports.createIdea = async (req, res) => {
-    const { newIdeaDesc, newIdeaCrits, userId } = req.body;
+    const { newIdeaDesc, userId } = req.body;
     try {
         const ideaCrits = 0
-        
-        const newIdea = await Idea.create({ ideaDescription: newIdeaDesc, ideaCrits: newIdeaCrits, userId: userId });
-        
+
+        const newIdea = await Idea.create({ ideaDescription: newIdeaDesc, ideaCrits: ideaCrits, userId: userId });
+
         res.status(200).json({ message: 'Create idea successful!'});
     } catch (error) {
         console.error('Create idea error:', error);
@@ -39,7 +39,7 @@ exports.getTopIdeaForUser = async (req, res) => {
                 return res.status(400).json({ message: 'Next unvoted idea not found' });
             }
     
-            res.status(200).json({ message: 'Found idea'});
+            res.status(200).json({ message: 'Found idea'}, {idea: idea});
         } catch (error) {
             console.error('Error finding idea', error);
             res.status(500).json({ message: 'Server error' });
@@ -76,10 +76,11 @@ exports.userBoostsCrits = async (req, res) => {
             const ideaCritAmount = await Idea.findOne({attributes: [ideaCrits], where: {ideaId: ideaId}}); //get old idea crit amount
             const newIdeaCritAmount = ideaCritAmount + critAmount;
             await User.update({crits: newCritAmount}, {where: {userId: userId}}); //edit user to have less crits
-            await Idea.update({ideaCrits: newIdeaCritsAmount}, {where: {ideaId: ideaId}}); //edit idea to have more crits
+            await Idea.update({ideaCrits: newIdeaCritAmount}, {where: {ideaId: ideaId}}); //edit idea to have more crits
+            return res.status(201).json({message:'Boosted idea crits and subtracted user crit'},{userCritAmount: newCritAmount});
         } else {
             //user does not have enough crits
-            return res.status(400).json({message: 'User does not have enough crits'});
+            return res.status(400).json({message: 'User does not have enough crits'},{userCritAmount: userCritAmount});
         }
 
         res.status(201).json({ message: 'Idea delete successful', user: { id: newUser.id, username: newUser.username } });

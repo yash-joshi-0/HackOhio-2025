@@ -16,7 +16,7 @@ const Signup = ({ onLoginSuccess }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await fetch('/api/signup', {
+            const response = await fetch('/api/auth/signup', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -28,7 +28,7 @@ const Signup = ({ onLoginSuccess }) => {
             setMessage(data.message);
             if (response.ok) {
                 console.log('Sign up successful!');
-                onLoginSuccess();
+                onLoginSuccess(data.user);
             }
         } catch (error) {
             console.error('Sign up error:', error);

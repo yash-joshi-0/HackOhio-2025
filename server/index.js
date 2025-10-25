@@ -10,8 +10,8 @@ const PORT = process.env.PORT || 5000;
 
 app.use(express.json());
 app.use('/api', authRoutes);
-app.use('/idea', authRoutes);
-app.use('/vote', authRoutes);
+app.use('/api', ideaRoutes);
+app.use('/api', voteRoutes);
 
 const startServer = async () => {
   try {
