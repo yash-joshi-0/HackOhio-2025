@@ -1,32 +1,34 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 
-const Home = ({ isLogin }) => {
-  const [topIdea, setTopIdea] = useState(null);
+const Home = ({ isLogin, user }) => {
+  const topIdea = "Error getting Idea";
   const topNoteRef = useRef(null);
   const bottomNoteRef = useRef(null);
 
   // Fetch the top idea if user is logged in
   useEffect(() => {
+    console.log(isLogin);
     if (isLogin) {
       fetchTopIdea();
     }
   }, [isLogin]);
 
   const fetchTopIdea = async () => {
-    try {
-      const response = await axios.get('/api/ideas/gettopideaforuser');
+    /* try {
+      const response = await axios.get('/api/ideas/getTopIdeaForUser');
       setTopIdea(response.data);
     } catch (error) {
       console.error('Error fetching top idea:', error);
-    }
+    } */
+    topIdea = "This is a sample idea description to demonstrate the sticky note functionality. Peel me off to see more!";
   };
 
   const handleVote = async (isLike) => {
     if (!topIdea) return;
     try {
       await axios.post('/api/votes/createvote', {
-        userId: 0,
+        userId: user.id,
         ideaId: topIdea.id,
         isLike,
       });
@@ -44,6 +46,10 @@ const Home = ({ isLogin }) => {
 
     // Auto-resize text
     function escapeHtml(s) {
+      if (typeof s !== 'string') {
+        console.warn('escapeHtml called with non-string:', s);
+        return '';
+      }
       return s.replace(/[&<>"']/g, c => ({
         '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'": '&#39;'
       })[c]);
@@ -56,6 +62,7 @@ const Home = ({ isLogin }) => {
     }
 
     function renderTextBlocks(rawText, contentEl){
+      
       const sentences = splitSentences(rawText);
       const nodes = sentences.length ? sentences : [rawText];
       contentEl.innerHTML = nodes.map(s => `<div class="line">${escapeHtml(s)}</div>`).join('');
@@ -235,7 +242,7 @@ const Home = ({ isLogin }) => {
         {isLogin ? (
           <>
             <div className="alert alert-success text-center mt-4">
-              You are signed in.
+              You are signed in as a {user.userId}.
             </div>
             {topIdea && (
               <div className="d-flex justify-content-center gap-2 mt-2">
