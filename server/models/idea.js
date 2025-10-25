@@ -25,5 +25,10 @@ Idea.associate = (models) => {
       onDelete: "CASCADE", // optional behavior
     });
 };
+Idea.associate = (models) => {
+    Idea.hasMany(models.Vote, {
+      foreignKey: "ideaId",
+    });
+};
 
 module.exports = Idea;

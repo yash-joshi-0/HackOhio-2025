@@ -28,6 +28,11 @@ User.associate = (models) => {
       foreignKey: "userId", // this creates the foreign key in the Post table
     });
 };
+User.associate = (models) => {
+    User.hasMany(models.Vote, {
+      foreignKey: "userId",
+    });
+};
 
 User.beforeCreate(async (user) => {
     const salt = await bcrypt.genSalt(10);
