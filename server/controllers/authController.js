@@ -34,7 +34,7 @@ exports.signup = async (req, res) => {
 
         // Create new user
         const newUser = await User.create({ username, password });
-        res.status(201).json({ message: 'Signup successful!', user: { id: newUser.id, username: newUser.username } });
+        res.status(201).json({ message: 'Signup successful!', user: { id: newUser.id, username: newUser.username } });//might be old and need updated
     } catch (error) {
         console.error('Signup error:', error);
         res.status(500).json({ message: 'Server error' });

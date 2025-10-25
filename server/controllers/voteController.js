@@ -51,9 +51,9 @@ exports.deleteVote = async (req, res) => {
 exports.getVote = async (req, res) => {
     const { userId, ideaId } = req.body;
     try {
-        const check = await Vote.findOne({ where: { userId: userId, ideaId: ideaId } });
-        if (check){ //ensure vote exists in the first place
-            
+        const vote = await Vote.findOne({ where: { userId: userId, ideaId: ideaId } });
+        if (vote){ //ensure vote exists in the first place
+            return res.status(201).json({message: 'Vote found'},{voter: vote.userId, idea: vote.ideaId, isLike: vote.isLike});
         } 
         else {
             return res.status(400).json({message: 'Vote does not exist'});
