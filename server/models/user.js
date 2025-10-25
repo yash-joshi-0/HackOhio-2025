@@ -3,6 +3,9 @@ const sequelize = require('../config/database');
 const bcrypt = require('bcryptjs');
 
 const User = sequelize.define('User', {
+    userId:{
+        type: 
+    },
     username: {
         type: DataTypes.STRING,
         unique: true,
@@ -13,6 +16,12 @@ const User = sequelize.define('User', {
         allowNull: false,
     },
 });
+
+User.associate = (models) => {
+    User.hasOne(models.Idea, {
+      foreignKey: "userId", // this creates the foreign key in the Post table
+    });
+};
 
 User.beforeCreate(async (user) => {
     const salt = await bcrypt.genSalt(10);
