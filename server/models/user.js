@@ -4,7 +4,9 @@ const bcrypt = require('bcryptjs');
 
 const User = sequelize.define('User', {
     userId:{
-        type: 
+        type: DataTypes.INTEGER,
+        primarykey: true,
+        allowNull: false,
     },
     username: {
         type: DataTypes.STRING,
@@ -15,10 +17,14 @@ const User = sequelize.define('User', {
         type: DataTypes.STRING,
         allowNull: false,
     },
+    crits: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+    },
 });
 
 User.associate = (models) => {
-    User.hasOne(models.Idea, {
+    User.hasMany(models.Idea, {
       foreignKey: "userId", // this creates the foreign key in the Post table
     });
 };

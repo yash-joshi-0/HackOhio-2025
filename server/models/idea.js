@@ -3,14 +3,18 @@ const sequelize = require('../config/database');
 const bcrypt = require('bcryptjs');
 
 const Idea = sequelize.define('Idea', {
-    ideaid: {
+    ideaId: {
         type: DataTypes.INTEGER,
         unique: true,
         allowNull: false,
         primarykey: true,
     },
-    ideadescription: {
+    ideaDescription: {
         type: DataTypes.STRING,
+        allowNull: false,
+    },
+    ideaCrits: {
+        type: DataTypes.INTEGER,
         allowNull: false,
     },
 });

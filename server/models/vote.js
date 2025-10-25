@@ -2,22 +2,28 @@ const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 const bcrypt = require('bcryptjs');
 
-const Idea = sequelize.define('Idea', {
-    ideaid: {
+const Vote = sequelize.define('Vote', {
+    voteId: {
         type: DataTypes.INTEGER,
         unique: true,
         allowNull: false,
         primarykey: true,
     },
-    ideadescription: {
-        type: DataTypes.STRING,
+    isLike: {
+        type: DataTypes.BOOLEAN,
         allowNull: false,
     },
 });
 
-Idea.associate = (models) => {
-    Idea.belongsTo(models.user, {
+Vote.associate = (models) => {
+    Vote.belongsTo(models.User, {
       foreignKey: "userId",
+      onDelete: "CASCADE", // optional behavior
+    });
+};
+Vote.associate = (models) => {
+    Vote.belongsTo(models.Idea, {
+      foreignKey: "ideaId",
       onDelete: "CASCADE", // optional behavior
     });
 };
