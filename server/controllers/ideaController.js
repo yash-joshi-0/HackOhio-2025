@@ -6,7 +6,7 @@ const User = require('../models/user');
 exports.createIdea = async (req, res) => {
     const { newIdeaDesc, newIdeaCrits, userId } = req.body;
     try {
-        ideaCrits = 0
+        const ideaCrits = 0
         
         const newIdea = await Idea.create({ ideaDescription: newIdeaDesc, ideaCrits: newIdeaCrits, userId: userId });
         
@@ -25,7 +25,7 @@ exports.getTopIdeaForUser = async (req, res) => {
                    {
                     model: Vote,
                     required: false, // LEFT JOIN
-                    where: { userId: userId, userId: },
+                    where: { userId: userId},
                     },
                 ],
                 where: {
