@@ -6,6 +6,7 @@ const User = sequelize.define('User', {
     userId:{
         type: DataTypes.INTEGER,
         primarykey: true,
+        autoIncrement: true,
         allowNull: false,
     },
     username: {
@@ -27,8 +28,6 @@ User.associate = (models) => {
     User.hasMany(models.Idea, {
       foreignKey: "userId", // this creates the foreign key in the Post table
     });
-};
-User.associate = (models) => {
     User.hasMany(models.Vote, {
       foreignKey: "userId",
     });
