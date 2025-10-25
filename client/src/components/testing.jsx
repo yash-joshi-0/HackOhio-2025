@@ -10,7 +10,7 @@ const Ideas = ({ onLoginSuccess }) => {
     useEffect(() => {
         const fetchNearby = async () => {
             try {
-                const res = await fetch(`/api/getUserData`);
+                const res = await fetch(`/api/`);
                 if (!res.ok) throw new Error('Failed to fetch ideas');
                 const data = await res.json();
                 setStores(data.stores || []);
