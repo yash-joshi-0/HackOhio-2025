@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const Home = ({ isLogin }) => {
+const Home = ({ isLogin, userData }) => {
     const [topIdea, setTopIdea] = useState(null);
 
     useEffect(() => {
@@ -23,7 +23,7 @@ const Home = ({ isLogin }) => {
     const handleVote = async (isLike) => {
         try {
             await axios.post('/api/votes/createvote', {
-                userId: 0,
+                userId: userData.id,
                 ideaId: topIdea.id,
                 isLike
             });
@@ -39,7 +39,7 @@ const Home = ({ isLogin }) => {
             {isLogin ? (
                 <div>
                     <div className="alert alert-success text-center mt-4">
-                        You are signed in.
+                        You are signed in {userData?.username }.
                     </div>
                     {topIdea && (
                         <div className="card mt-4">

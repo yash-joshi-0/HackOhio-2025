@@ -28,7 +28,7 @@ const Signup = ({ onLoginSuccess }) => {
             setMessage(data.message);
             if (response.ok) {
                 console.log('Sign up successful!');
-                onLoginSuccess();
+                onLoginSuccess(data.user);
             }
         } catch (error) {
             console.error('Sign up error:', error);

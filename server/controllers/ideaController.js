@@ -4,12 +4,12 @@ const User = require('../models/user');
 
 // create Idea
 exports.createIdea = async (req, res) => {
-    const { newIdeaDesc, newIdeaCrits, userId } = req.body;
+    const { newIdeaDesc, userId } = req.body;
     try {
         const ideaCrits = 0
-        
-        const newIdea = await Idea.create({ ideaDescription: newIdeaDesc, ideaCrits: newIdeaCrits, userId: userId });
-        
+
+        const newIdea = await Idea.create({ ideaDescription: newIdeaDesc, ideaCrits: ideaCrits, userId: userId });
+
         res.status(200).json({ message: 'Create idea successful!'});
     } catch (error) {
         console.error('Create idea error:', error);

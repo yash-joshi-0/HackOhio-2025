@@ -28,7 +28,7 @@ const Login = ({ onLoginSuccess }) => {
             setMessage(data.message);
             if (response.ok) {
                 console.log('Login successful!');
-                onLoginSuccess();
+                onLoginSuccess(data.user);
             }
         } catch (error) {
             console.error('Login error:', error);

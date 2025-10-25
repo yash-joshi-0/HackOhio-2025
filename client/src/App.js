@@ -3,12 +3,15 @@ import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-ro
 import Login from './components/login';
 import Signup from './components/signup';
 import Home from './components/home';
+import Ideas from './components/ideas';
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userData, setUserData] = useState(null);
 
-  const handleLogin = (status) => {
+  const handleLogin = (status, data) => {
     setIsLoggedIn(status);
+    setUserData(data);
   };
   return (
     <Router>
@@ -27,17 +30,20 @@ const App = () => {
                   <Link to="/signup" className="btn btn-dark btn-sm">Sign up</Link>
                 </>
               ) : (
-                <img src="https://via.placeholder.com/40" alt="Profile" className="rounded-circle" style={{width: 40, height: 40}} />
+                <Link to='/ideas'>
+                  <img src="https://via.placeholder.com/40" alt="Profile" className="rounded-circle" style={{width: 40, height: 40}} />
+                </Link>
               )}
             </div>
           </div>
         </nav>
 
         <Routes>
-          <Route path="/login" element={<Login onLoginSuccess={() => handleLogin(true)} />} />
-          <Route path="/signup" element={<Signup onLoginSuccess={() => handleLogin(true)} />} />
-          <Route path="/account" element={<Signup onLoginSuccess={() => handleLogin(true)} />} />
-          <Route path="/" element={<Home isLogin={isLoggedIn} />} />
+          <Route path="/login" element={<Login onLoginSuccess={(data) => handleLogin(true, data)} />} />
+          <Route path="/signup" element={<Signup onLoginSuccess={(data) => handleLogin(true, data)} />} />
+          <Route path="/account" element={<Signup onLoginSuccess={(data) => handleLogin(true, data)} />} />
+          <Route path="/ideas" element={<Ideas isLogin={isLoggedIn} userData={userData} />} />
+          <Route path="/" element={<Home isLogin={isLoggedIn} userData={userData} />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </div>
