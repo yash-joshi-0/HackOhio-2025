@@ -37,7 +37,7 @@ const Login = ({ onLoginSuccess }) => {
     };
 
     return (
-        <div className="bg-light position-relative" style={{ minHeight: '100vh' }}>
+        <div className="position-relative" style={{ minHeight: '100vh'}}>
             <style>{`
                 .slide-alert {
                     position: absolute;
@@ -55,14 +55,7 @@ const Login = ({ onLoginSuccess }) => {
             <div className={`slide-alert alert ${message ? (message === 'Login successful!' ? 'alert-success' : 'alert-danger') : ''} text-center${message ? ' show' : ''}`} role="alert">
                 {message}
             </div>
-            <nav className="navbar navbar-expand-lg navbar-light bg-white shadow-sm mb-4">
-                <div className="container-fluid">
-                    <a className="navbar-brand fw-bold" href="#">Punchfast</a>
-                        <div className="d-flex ms-auto">
-                            <Link to="/business/login" className="btn btn-outline-primary" role="button">Business</Link>
-                        </div>
-                </div>
-            </nav>
+            
             <div className="container">
                 <div className="row justify-content-center align-items-center min-vh-100" style={{marginTop: '-56px'}}>
                     <div className="card shadow-sm mx-auto w-100" style={{maxWidth: '500px'}}>

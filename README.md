@@ -1,2 +1,2 @@
-# punchfast
-Rewards platform for smaller businesses
+# protothought
+quick crowdsourced criticism

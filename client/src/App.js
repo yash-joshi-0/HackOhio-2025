@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom';
 import Login from './components/login';
 import Signup from './components/signup';
 import Home from './components/home';
@@ -13,12 +13,35 @@ const App = () => {
 
   return (
     <Router>
-      <Routes>
-        <Route path="/login" element={<Login onLoginSuccess={() => handleLogin(true)} />} />
-        <Route path="/signup" element={<Signup onLoginSuccess={() => handleLogin(true)} />} />
-        <Route path="/" element={<Home user={{ isLogin: isLoggedIn }} />} />
-        <Route path="*" element={<Navigate to="/" />} />
-      </Routes>
+      <div>
+        <nav className="navbar navbar-expand-lg shadow-sm mb-4">
+          <div className="container-fluid position-relative">
+            <div className="d-flex align-items-center" style={{width: '100px'}}>
+              <i className="fas fa-bolt text-warning mr-2"></i>
+              <span className="font-weight-bold">12</span>
+            </div>
+            <a className="navbar-brand font-weight-bold position-absolute" style={{left: '50%', transform: 'translateX(-50%)'}} href="#">PROTOTHOUGHTS</a>
+            <div className="d-flex align-items-center" style={{width: '200px', justifyContent: 'flex-end', gap: '8px'}}>
+              {!isLoggedIn ? (
+                <>
+                  <Link to="/login" className="btn btn-outline-dark btn-sm">Sign in</Link>
+                  <Link to="/signup" className="btn btn-dark btn-sm">Sign up</Link>
+                </>
+              ) : (
+                <img src="https://via.placeholder.com/40" alt="Profile" className="rounded-circle" style={{width: 40, height: 40}} />
+              )}
+            </div>
+          </div>
+        </nav>
+
+        <Routes>
+          <Route path="/login" element={<Login onLoginSuccess={() => handleLogin(true)} />} />
+          <Route path="/signup" element={<Signup onLoginSuccess={() => handleLogin(true)} />} />
+          <Route path="/account" element={<Signup onLoginSuccess={() => handleLogin(true)} />} />
+          <Route path="/" element={<Home user={{ isLogin: isLoggedIn }} />} />
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </div>
     </Router>
   );
 };
