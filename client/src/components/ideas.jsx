@@ -32,7 +32,7 @@ const Ideas = ({ isLogin, userData }) => {
         setError(null);
         setLoading(true);
         try {
-            const res = await fetch('/idea/createidea', {
+            const res = await fetch('/api/createidea', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({  newIdeaDesc: newIdea, userId: userData.id }),
