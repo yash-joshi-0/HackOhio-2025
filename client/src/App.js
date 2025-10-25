@@ -10,7 +10,6 @@ const App = () => {
   const handleLogin = (status) => {
     setIsLoggedIn(status);
   };
-
   return (
     <Router>
       <div>
@@ -20,7 +19,7 @@ const App = () => {
               <i className="fas fa-bolt text-warning mr-2"></i>
               <span className="font-weight-bold">12</span>
             </div>
-            <a className="navbar-brand font-weight-bold position-absolute" style={{left: '50%', transform: 'translateX(-50%)'}} href="#">PROTOTHOUGHTS</a>
+            <Link className="navbar-brand font-weight-bold position-absolute" style={{left: '50%', transform: 'translateX(-50%)'}} to="/">PROTOTHOUGHTS</Link>
             <div className="d-flex align-items-center" style={{width: '200px', justifyContent: 'flex-end', gap: '8px'}}>
               {!isLoggedIn ? (
                 <>
@@ -38,7 +37,7 @@ const App = () => {
           <Route path="/login" element={<Login onLoginSuccess={() => handleLogin(true)} />} />
           <Route path="/signup" element={<Signup onLoginSuccess={() => handleLogin(true)} />} />
           <Route path="/account" element={<Signup onLoginSuccess={() => handleLogin(true)} />} />
-          <Route path="/" element={<Home user={{ isLogin: isLoggedIn }} />} />
+          <Route path="/" element={<Home isLogin={isLoggedIn} />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </div>

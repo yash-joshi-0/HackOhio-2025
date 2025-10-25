@@ -33,7 +33,8 @@ exports.signup = async (req, res) => {
         }
 
         // Create new user
-        const newUser = await User.create({ username, password });
+        var crits = 0
+        const newUser = await User.create({ username, crits, password });
         res.status(201).json({ message: 'Signup successful!', user: { id: newUser.id, username: newUser.username } });
     } catch (error) {
         console.error('Signup error:', error);
