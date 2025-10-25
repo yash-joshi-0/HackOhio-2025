@@ -27,4 +27,4 @@ Vote.associate = (models) => {
     });
 };
 
-module.exports = Idea;
+module.exports = Vote;
