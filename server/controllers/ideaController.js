@@ -29,8 +29,8 @@ exports.getTopIdeaForUser = async (req, res) => {
                     },
                 ],
                 where: {
-                    "$Votes.id$": null, // only where the user hasn’t voted
-                    user_id: { [Op.ne]: userId }, // user is NOT the idea owner
+                    voteId: null, // only where the user hasn’t voted
+                    userId: { [Op.ne]: userId }, // user is NOT the idea owner
                 },
                 order: [["crits", "DESC"]],
                 limit: 1,
