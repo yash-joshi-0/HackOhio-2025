@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, Link, useNavigate } from 'react-router-dom';
 import Login from './components/login';
 import Signup from './components/signup';
 import Home from './components/home';
 import Ideas from './components/ideas';
+import { anonymousUser } from './utils/anonymousUser';
 
 // Import Margarine font
 const fontLink = document.createElement("link");
@@ -14,10 +15,30 @@ document.head.appendChild(fontLink);
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userData, setUserData] = useState(null);
+  const [crits, setCrits] = useState(5);
+
+  // Initialize crits on mount
+  useEffect(() => {
+    if (isLoggedIn && userData) {
+      setCrits(userData.crits || 0);
+    } else {
+      setCrits(anonymousUser.getCrits());
+    }
+  }, [isLoggedIn, userData]);
 
   const handleLogin = (status, data) => {
     setIsLoggedIn(status);
     setUserData(data);
+    if (status && data) {
+      setCrits(data.crits || 0);
+    }
+  };
+
+  const updateCrits = (newCrits) => {
+    setCrits(newCrits);
+    if (!isLoggedIn) {
+      anonymousUser.setCrits(newCrits);
+    }
   };
 
   return (
@@ -41,13 +62,13 @@ const App = () => {
             background: 'transparent',
             boxShadow: 'none',
             color: 'black',
-            height: 'clamp(120px, 6vw, 160px)', // larger minimum
+            height: 'clamp(120px, 6vw, 160px)',
             display: 'flex',
             alignItems: 'center',
           }}
         >
           <div className="container-fluid position-relative" style={{ color: 'black' }}>
-            {/* Left: Points */}
+            {/* Left: Crits */}
             <div
               className="d-flex align-items-center"
               style={{
@@ -71,7 +92,7 @@ const App = () => {
                   fontSize: 'clamp(18px, 1.4vw, 24px)',
                 }}
               >
-                12
+                {crits}
               </span>
             </div>
 
@@ -130,35 +151,65 @@ const App = () => {
                   </Link>
                 </>
               ) : (
-                <Link to="/ideas">
-                  <img
-                    src="https://via.placeholder.com/40"
-                    alt="Profile"
-                    className="rounded-circle"
-                    style={{
-                      width: 'clamp(48px, 3vw, 64px)',
-                      height: 'auto',
-                    }}
-                  />
-                </Link>
+                <NavigationButtons onLogout={() => handleLogin(false, null)} />
               )}
             </div>
           </div>
         </nav>
 
         {/* Routes */}
-        <div style={{ padding: '0 2rem' }}>
-          <Routes>
-            <Route path="/login" element={<Login onLoginSuccess={(data) => handleLogin(true, data)} />} />
-            <Route path="/signup" element={<Signup onLoginSuccess={(data) => handleLogin(true, data)} />} />
-            <Route path="/account" element={<Signup onLoginSuccess={(data) => handleLogin(true, data)} />} />
-            <Route path="/ideas" element={<Ideas isLogin={isLoggedIn} userData={userData} />} />
-            <Route path="/" element={<Home isLogin={isLoggedIn} userData={userData} />} />
-            <Route path="*" element={<Navigate to="/" />} />
-          </Routes>
-        </div>
+        <Routes>
+          <Route path="/login" element={<Login onLoginSuccess={(data) => handleLogin(true, data)} />} />
+          <Route path="/signup" element={<Signup onLoginSuccess={(data) => handleLogin(true, data)} />} />
+          <Route path="/ideas" element={<Ideas isLogin={isLoggedIn} userData={userData} crits={crits} updateCrits={updateCrits} />} />
+          <Route path="/" element={<Home isLogin={isLoggedIn} userData={userData} crits={crits} updateCrits={updateCrits} />} />
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
       </div>
     </Router>
+  );
+};
+
+// ✅ Fixed NavigationButtons component
+const NavigationButtons = ({ onLogout }) => {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    onLogout();
+    navigate('/');
+  };
+
+  return (
+    <div className="d-flex align-items-center" style={{ gap: 'clamp(8px, 1vw, 16px)' }}>
+      <button
+        onClick={handleLogout}
+        className="btn btn-outline-dark btn-sm"
+        style={{
+          borderWidth: '2px',
+          color: 'black',
+          fontSize: 'clamp(16px, 1vw, 20px)',
+          padding: 'clamp(8px, 0.6vw, 12px) clamp(16px, 1vw, 20px)',
+        }}
+      >
+        Sign out
+      </button>
+      <Link to="/ideas">
+        <div
+          style={{
+            width: 'clamp(48px, 3vw, 64px)',
+            height: 'clamp(48px, 3vw, 64px)',
+            borderRadius: '50%',
+            backgroundColor: '#ffc107',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: 'clamp(22px, 1.6vw, 28px)',
+          }}
+        >
+          💡
+        </div>
+      </Link>
+    </div>
   );
 };
 

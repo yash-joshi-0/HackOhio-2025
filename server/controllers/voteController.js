@@ -2,35 +2,50 @@ const Idea = require('../models/idea');
 const Vote = require('../models/vote');
 const User = require('../models/user');
 
-// create Idea
+// create Vote
 exports.createVote = async (req, res) => {
     const { userId, ideaId, isLike } = req.body;
     try {
-        /*const ideaOwner = await Idea.findOne({attributes: [userId], where: {ideaId: ideaId}}); //get owner of idea
-        if(userId != ideaOwner){ //ensure the person leaving the vote does not own the idea
-            */
-           const newVote = await Vote.create({userId: userId, ideaId: ideaId, isLike: isLike}); //creates their vote
-           /* let ideaLosesCrit = false;
-            let userGainsCrit = true;
-            let userCrits = await User.findOne({attributes: ['crits']}, {where: {userId: userId}});
+        // Check if user owns this idea
+        const idea = await Idea.findOne({ where: { id: ideaId } });
+        if (!idea) {
+            return res.status(400).json({ message: 'Idea not found' });
+        }
 
-            if (Math.random() < 0.05) { //5% chance of idea losing a crit
-                const curIdeaCrits = await Idea.findOne({attributes: ['ideaCrits']},{where: {ideaId: ideaId}});
-                const newIdeaCrits = curIdeaCrits - 1;
-                await Idea.update({ideaCrits: newIdeaCrits},{where: {ideaId: ideaId}});
-                ideaLosesCrit = true;
-            }
-            if (Math.random() < 0.10) { //10% chance user gains a crit
-                userCrits = userCrits - 1;
-                await User.update({crits: userCrits},{where: {userId: userId}});
-                userGainsCrit = true;
-            }*/
-            res.status(200).json({message: "Successfully created vote"/*, userCrits: userCrits, userGainsCrit: userGainsCrit, ideaLosesCrit: ideaLosesCrit*/});
-            
-        //} else{ //userid equals owner of idea. not allowed
-        //    res.status(400).json({ message: 'User cannot leave a vote on their own idea' });
-        //}
-        
+        if (idea.userId === userId) {
+            return res.status(400).json({ message: 'User cannot vote on their own idea' });
+        }
+
+        // Check if user already voted on this idea
+        const existingVote = await Vote.findOne({ where: { userId: userId, ideaId: ideaId } });
+        if (existingVote) {
+            return res.status(400).json({ message: 'User has already voted on this idea' });
+        }
+
+        // Create the vote
+        const newVote = await Vote.create({ userId: userId, ideaId: ideaId, isLike: isLike });
+
+        // Decrement idea crits (each crit = ~10 views, so subtract 0.1 per vote)
+        const currentIdeaCrits = idea.ideaCrits;
+        const newIdeaCrits = Math.max(0, currentIdeaCrits - 0.1);
+        await Idea.update({ ideaCrits: newIdeaCrits }, { where: { id: ideaId } });
+
+        // Give voter a chance to earn a crit (10% chance)
+        let userGainedCrit = false;
+        let newUserCrits = 0;
+        if (Math.random() < 0.10) {
+            const user = await User.findOne({ where: { id: userId } });
+            newUserCrits = user.crits + 1;
+            await User.update({ crits: newUserCrits }, { where: { id: userId } });
+            userGainedCrit = true;
+        }
+
+        res.status(200).json({
+            message: "Successfully created vote",
+            userGainedCrit: userGainedCrit,
+            userCrits: userGainedCrit ? newUserCrits : undefined
+        });
+
     } catch (error) {
         console.error('Create vote error:', error);
         res.status(500).json({ message: 'Server error' });

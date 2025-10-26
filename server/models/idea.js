@@ -7,20 +7,18 @@ const Idea = sequelize.define('Idea', {
         allowNull: false,
     },
     ideaCrits: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.DECIMAL,
         allowNull: false,
     },
 });
 
 Idea.associate = (models) => {
-    Idea.belongsTo(models.user, {
-      foreignKey: "id",
-      onDelete: "CASCADE", // optional behavior
+    Idea.belongsTo(models.User, {
+      foreignKey: "userId",
+      onDelete: "CASCADE",
     });
-};
-Idea.associate = (models) => {
     Idea.hasMany(models.Vote, {
-      foreignKey: "id",
+      foreignKey: "ideaId",
     });
 };
 
