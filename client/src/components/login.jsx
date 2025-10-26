@@ -102,12 +102,14 @@ const Login = ({ onLoginSuccess }) => {
                 }
 
                 .sticker-subheader {
+                    position: relative;
+                    top: -45px;
                     text-align: center;
-                    font-size: 1.2rem;
-                    color: #333;
-                    margin-top: -10px;
-                    margin-bottom: 20px;
+                    font-size: 1.5rem;
+                    color: white;
                     font-weight: 600;
+                    text-transform: lowercase;
+                    letter-spacing: 1px;
                 }
 
                 .sticker-body {
