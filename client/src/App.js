@@ -194,20 +194,15 @@ const NavigationButtons = ({ onLogout }) => {
         Sign out
       </button>
       <Link to="/ideas">
-        <div
+        <img
+          src="https://cdn-icons-png.flaticon.com/512/1016/1016562.png "
+          alt="Points"
           style={{
-            width: 'clamp(48px, 3vw, 64px)',
-            height: 'clamp(48px, 3vw, 64px)',
-            borderRadius: '50%',
-            backgroundColor: '#ffc107',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: 'clamp(22px, 1.6vw, 28px)',
+            width: 'clamp(36px, 2.4vw, 48px)',
+            height: 'auto',
+            marginRight: '0.8vw',
           }}
-        >
-          💡
-        </div>
+        />
       </Link>
     </div>
   );
