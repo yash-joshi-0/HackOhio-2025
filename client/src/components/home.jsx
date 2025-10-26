@@ -41,8 +41,7 @@ const Home = ({ isLogin, userData, crits, updateCrits }) => {
   useEffect(() => {
     const initIdeas = async () => {
       const first = await fetchTopIdea();
-      const second = await fetchTopIdea();
-      const stack = [first, second].filter(Boolean);
+      const stack = [first].filter(Boolean);
       setIdeaStack(stack);
     };
     initIdeas();
