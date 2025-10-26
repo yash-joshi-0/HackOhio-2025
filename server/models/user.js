@@ -13,7 +13,7 @@ const User = sequelize.define('User', {
         allowNull: false,
     },
     crits: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.DECIMAL,
         allowNull: false,
     },
 });

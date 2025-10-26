@@ -7,7 +7,7 @@ const Idea = sequelize.define('Idea', {
         allowNull: false,
     },
     ideaCrits: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.DECIMAL,
         allowNull: false,
     },
 });
