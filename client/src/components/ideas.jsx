@@ -11,10 +11,17 @@ const Ideas = ({ isLogin, userData }) => {
     useEffect(() => {
         const fetchIdeas = async () => {
             try {
-                const res = await fetch('/api/idea');
-                if (!res.ok) throw new Error('Failed to fetch ideas');
+                const res = await fetch('/api/getIdeasWithVotesFromUser', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: userData.id }),
+            });
+                if (!res.ok) throw new Error('Failed to fetch ideas')
+                    else{
                 const data = await res.json();
+                console.log(data)
                 setIdeas(data.ideas || []);
+                    }
             } catch (err) {
                 console.error(err);
                 setError('Could not load ideas');
