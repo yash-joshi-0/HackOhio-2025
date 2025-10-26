@@ -8,8 +8,8 @@ exports.createIdea = async (req, res) => {
     const { newIdeaDesc, userId } = req.body;
     try {
         const ideaCrits = 0
-
-        const newIdea = await Idea.create({ ideaDescription: newIdeaDesc, ideaCrits: ideaCrits, userId: userId });
+        const title = "blank"; //temporary. need to let users set title in UI
+        const newIdea = await Idea.create({ ideaDescription: newIdeaDesc, ideaTitle: title, ideaCrits: ideaCrits, userId: userId });
 
         res.status(200).json({ message: 'Create idea successful!'});
     } catch (error) {

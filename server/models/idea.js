@@ -6,6 +6,10 @@ const Idea = sequelize.define('Idea', {
         type: DataTypes.STRING,
         allowNull: false,
     },
+    ideaTitle: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
     ideaCrits: {
         type: DataTypes.DECIMAL,
         allowNull: false,
