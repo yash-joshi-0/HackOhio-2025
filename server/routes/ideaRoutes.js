@@ -3,9 +3,9 @@ const router = express.Router();
 const ideaController = require('../controllers/ideaController');
 
 router.post('/createidea', ideaController.createIdea);
-router.post('/deleteidea', ideaController.deleteIdea);
-router.post('/gettopideaforuser', ideaController.getTopIdeaForUser);
-router.post('/userboostscrit', ideaController.userBoostsCrits);
-router.post('/getIdeasWithVotesFromUser', ideasController.getIdeasWithVotesFromUser);
+router.delete('/deleteidea', ideaController.deleteIdea);
+router.get('/gettopideaforuser', ideaController.getTopIdeaForUser);
+router.patch('/userboostscrit', ideaController.userBoostsCrits);
+router.get('/getIdeasWithVotesFromUser', ideasController.getIdeasWithVotesFromUser);
 
 module.exports = router;
