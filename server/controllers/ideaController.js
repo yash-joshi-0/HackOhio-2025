@@ -7,7 +7,7 @@ const { Sequelize } = require('sequelize');
 exports.createIdea = async (req, res) => {
     const { newIdeaDesc, userId } = req.body;
     try {
-        const ideaCrits = 5
+        const ideaCrits = 0
 
         const newIdea = await Idea.create({ ideaDescription: newIdeaDesc, ideaCrits: ideaCrits, userId: userId });
 
