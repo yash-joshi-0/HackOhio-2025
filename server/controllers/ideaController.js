@@ -21,19 +21,7 @@ exports.getTopIdeaForUser = async (req, res) => {
     const { userId } = req.body;
         try {
             const idea = await Idea.findOne({
-                include: [ //this creates a left join on idea with vote
-                   {
-                    model: Vote,
-                    required: false, // LEFT JOIN
-                    where: { userId: userId},
-                    },
-                ],
-                where: {
-                    voteId: null, // only where the user hasn’t voted
-                    userId: { [Op.ne]: userId }, // user is NOT the idea owner
-                },
-                order: [["crits", "DESC"]],
-                limit: 1,
+                order: [["ideaCrits", "DESC"]],
             });
             if (!idea) {
                 return res.status(400).json({ message: 'Next unvoted idea not found' });
