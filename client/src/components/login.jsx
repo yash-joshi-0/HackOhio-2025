@@ -19,18 +19,13 @@ const Login = ({ onLoginSuccess }) => {
         try {
             const response = await fetch('/api/login', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password }),
             });
 
             const data = await response.json();
             setMessage(data.message);
             if (response.ok) {
-                console.log('Login successful!');
-
-                // Merge anonymous data if exists
                 const anonymousData = anonymousUser.getAllData();
                 if (anonymousData.votes.length > 0 || anonymousData.crits > 5) {
                     try {
@@ -40,14 +35,12 @@ const Login = ({ onLoginSuccess }) => {
                             body: JSON.stringify({
                                 userId: data.user.id,
                                 anonymousVotes: anonymousData.votes,
-                                anonymousCrits: anonymousData.crits - 5 // Only add the earned crits
+                                anonymousCrits: anonymousData.crits - 5,
                             }),
                         });
 
                         if (mergeResponse.ok) {
                             const mergeData = await mergeResponse.json();
-                            console.log(`Merged ${mergeData.votesAdded} votes and ${anonymousData.crits - 5} crits`);
-                            // Update user data with new crit count
                             data.user.crits = mergeData.newCrits;
                             anonymousUser.clear();
                         }
@@ -55,7 +48,6 @@ const Login = ({ onLoginSuccess }) => {
                         console.error('Error merging anonymous data:', mergeError);
                     }
                 }
-
                 onLoginSuccess(data.user);
             }
         } catch (error) {
@@ -65,8 +57,15 @@ const Login = ({ onLoginSuccess }) => {
     };
 
     return (
-        <div className="position-relative" style={{ minHeight: '100vh'}}>
+        <div className="position-relative" style={{ minHeight: '100vh' }}>
             <style>{`
+                @import url('https://fonts.googleapis.com/css2?family=Margarine&display=swap');
+
+                body {
+                    background: url('https://cdn.architextures.org/textures/23/2/oak-veneermdf-none-rz7xim-1200.jpg') center/cover no-repeat;
+                    font-family: 'Margarine', sans-serif;
+                }
+
                 .slide-alert {
                     position: absolute;
                     top: 20px;
@@ -76,58 +75,130 @@ const Login = ({ onLoginSuccess }) => {
                     z-index: 1050;
                     transition: transform 0.4s cubic-bezier(.4,0,.2,1);
                 }
+
                 .slide-alert.show {
                     transform: translateX(-50%) scaleY(1);
                 }
+
+                .sticker-card {
+                    background: white;
+                    border-radius: 12px;
+                    overflow: hidden;
+                    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+                    border: 2px solid #cc0000;
+                    max-width: 600px;
+                    width: 100%;
+                }
+
+                .sticker-header {
+                    background: #cc0000;
+                    color: white;
+                    text-align: center;
+                    font-size: 3rem;
+                    padding: 20px 0;
+                    letter-spacing: 2px;
+                    text-transform: uppercase;
+                    font-weight: bold;
+                }
+
+                .sticker-subheader {
+                    text-align: center;
+                    font-size: 1.2rem;
+                    color: #333;
+                    margin-top: -10px;
+                    margin-bottom: 20px;
+                    font-weight: 600;
+                }
+
+                .sticker-body {
+                    padding: 2rem 3rem;
+                    background: white;
+                    text-align: center;
+                }
+
+                .sticker-input {
+                    font-size: 1.5rem;
+                    text-align: center;
+                    border: none;
+                    border-bottom: 3px solid #cc0000;
+                    border-radius: 0;
+                    outline: none;
+                    width: 100%;
+                    margin-bottom: 1.5rem;
+                    background: transparent;
+                }
+
+                .sticker-input:focus {
+                    border-color: #ff4d4d;
+                }
+
+                .btn-sticker {
+                    background: #cc0000;
+                    color: white;
+                    font-size: 1.5rem;
+                    border: none;
+                    padding: 10px 20px;
+                    border-radius: 6px;
+                    transition: transform 0.2s ease;
+                }
+
+                .btn-sticker:hover {
+                    transform: scale(1.05);
+                    background: #ff4d4d;
+                }
+
+                .text-muted {
+                    color: #333 !important;
+                }
             `}</style>
-            <div className={`slide-alert alert ${message ? (message === 'Login successful!' ? 'alert-success' : 'alert-danger') : ''} text-center${message ? ' show' : ''}`} role="alert">
+
+            <div
+                className={`slide-alert alert ${
+                    message
+                        ? message === 'Login successful!'
+                            ? 'alert-success'
+                            : 'alert-danger'
+                        : ''
+                } text-center${message ? ' show' : ''}`}
+                role="alert"
+            >
                 {message}
             </div>
-            
-            <div className="container">
-                <div className="row justify-content-center align-items-center min-vh-100" style={{marginTop: '-56px'}}>
-                    <div className="card shadow-sm mx-auto w-100" style={{maxWidth: '500px'}}>
-                        <div className="card-body p-4 p-md-5">
-                            <h2 className="card-title text-center mb-2 fw-bold">Sign in</h2>                                
-                            <form onSubmit={handleSubmit}>
-                                <div className="mb-3">
-                                    <label htmlFor="username" className="form-label">Username</label>
-                                    <input
-                                        type="text"
-                                        className="form-control"
-                                        id="username"
-                                        placeholder="Enter username"
-                                        value={username}
-                                        onChange={(e) => setUsername(e.target.value)}
-                                        required
-                                    />
-                                </div>
 
-                                <div className="mb-4">
-                                    <label htmlFor="password" className="form-label">Password</label>
-                                    <input
-                                        type="password"
-                                        className="form-control"
-                                        id="password"
-                                        placeholder="Enter password"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        required
-                                    />
-                                </div>
-
-                                <div className="d-flex justify-content-between align-items-center mb-4">
-                                    <button type="submit" className="btn btn-primary">Sign in</button>
-                                    <a href="#" className="form-text text-decoration-none ms-3">Forgot?</a>
-                                </div>
-
-                                <div className="text-center mt-4">
-                                    <p className="text-muted mb-0">No account? <Link to="/signup" className="text-decoration-none fw-medium">Sign up</Link></p>
-                                </div>
-                            </form>
-
-                        </div>
-
+            <div className="container d-flex justify-content-center align-items-center min-vh-100">
+                <div className="sticker-card">
+                    <div className="sticker-header">HELLO</div>
+                    <div className="sticker-subheader">my name is</div>
+                    <div className="sticker-body">
+                        <form onSubmit={handleSubmit}>
+                            <input
+                                type="text"
+                                className="sticker-input"
+                                id="username"
+                                placeholder="Username"
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
+                                required
+                            />
+                            <input
+                                type="password"
+                                className="sticker-input"
+                                id="password"
+                                placeholder="Password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                            />
+                            <button type="submit" className="btn-sticker w-100 mt-3">Sign in</button>
+                            <div className="text-center mt-3">
+                                <p className="text-muted mb-0">
+                                    No account?{' '}
+                                    <Link to="/signup" className="text-decoration-none" style={{ color: '#cc0000' }}>
+                                        Sign up
+                                    </Link>
+                                </p>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
