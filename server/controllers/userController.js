@@ -25,7 +25,7 @@ exports.boostUserCrits = async (req, res) => {
         const curUserCritAmount = await User.findOne({attributes: ['crits']}, {where: {userId: userId}});
         const newUserCritAmount = curUserCritAmount + critAmount;
         await User.update({crits: newUserCritAmount},{where: {userId: userId}});
-        return res.status(200).json({ message: 'Boosted user crits'}, {userCritAmount: newUserCritAmount});
+        return res.status(200).json({ message: 'Boosted user crits', userCritAmount: newUserCritAmount});
     } catch (error) {
         console.error('Login error:', error);
         res.status(500).json({ message: 'Server error' });
