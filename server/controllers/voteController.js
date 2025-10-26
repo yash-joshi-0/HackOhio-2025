@@ -26,7 +26,7 @@ exports.createVote = async (req, res) => {
         const newVote = await Vote.create({ userId: userId, ideaId: ideaId, isLike: isLike });
 
         // Decrement idea crits (each crit = ~10 views, so subtract 0.1 per vote)
-        const currentIdeaCrits = idea.ideaCrits;
+        const currentIdeaCrits = parseFloat(idea.ideaCrits) || 0;
         const newIdeaCrits = Math.max(0, currentIdeaCrits - 0.1);
         await Idea.update({ ideaCrits: newIdeaCrits }, { where: { id: ideaId } });
 
@@ -35,7 +35,8 @@ exports.createVote = async (req, res) => {
         let newUserCrits = 0;
         if (Math.random() < 0.10) {
             const user = await User.findOne({ where: { id: userId } });
-            newUserCrits = user.crits + 1;
+            const currentCrits = parseFloat(user.crits) || 0;
+            newUserCrits = currentCrits + 1;
             await User.update({ crits: newUserCrits }, { where: { id: userId } });
             userGainedCrit = true;
         }
@@ -43,7 +44,7 @@ exports.createVote = async (req, res) => {
         res.status(200).json({
             message: "Successfully created vote",
             userGainedCrit: userGainedCrit,
-            userCrits: userGainedCrit ? newUserCrits : undefined
+            userCrits: userGainedCrit ? parseFloat(newUserCrits) : undefined
         });
 
     } catch (error) {

@@ -13,8 +13,9 @@ const User = sequelize.define('User', {
         allowNull: false,
     },
     crits: {
-        type: DataTypes.DECIMAL,
+        type: DataTypes.FLOAT,
         allowNull: false,
+        defaultValue: 5,
     },
 });
 

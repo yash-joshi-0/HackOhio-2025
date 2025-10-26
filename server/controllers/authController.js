@@ -16,7 +16,7 @@ exports.login = async (req, res) => {
             return res.status(400).json({ message: 'Invalid credentials.' });
         }
 
-        res.status(200).json({ message: 'Login successful!', user: { id: user.id, username: user.username, crits: user.crits } });
+        res.status(200).json({ message: 'Login successful!', user: { id: user.id, username: user.username, crits: parseFloat(user.crits) } });
     } catch (error) {
         console.error('Login error:', error);
         res.status(500).json({ message: 'Server error' });
@@ -34,9 +34,9 @@ exports.signup = async (req, res) => {
         }
 
         // Create new user
-        var crits = 5
+        const crits = 5;
         const newUser = await User.create({ username, crits, password });
-        res.status(201).json({ message: 'Signup successful!', user: { id: newUser.id, username: newUser.username, crits: newUser.crits } });
+        res.status(201).json({ message: 'Signup successful!', user: { id: newUser.id, username: newUser.username, crits: parseFloat(newUser.crits) } });
     } catch (error) {
         console.error('Signup error:', error);
         res.status(500).json({ message: 'Server error' });
@@ -53,7 +53,9 @@ exports.mergeAnonymousData = async (req, res) => {
         }
 
         // Add anonymous crits to user account
-        const newCrits = user.crits + anonymousCrits;
+        const currentCrits = parseFloat(user.crits) || 0;
+        const addCrits = parseFloat(anonymousCrits) || 0;
+        const newCrits = currentCrits + addCrits;
         await User.update({ crits: newCrits }, { where: { id: userId } });
 
         // Add anonymous votes, avoiding duplicates

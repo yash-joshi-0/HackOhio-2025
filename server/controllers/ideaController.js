@@ -7,7 +7,7 @@ const { Sequelize } = require('sequelize');
 exports.createIdea = async (req, res) => {
     const { newIdeaDesc, userId } = req.body;
     try {
-        const ideaCrits = 0
+        const ideaCrits = 0.0;
         const title = "blank"; //temporary. need to let users set title in UI
         const newIdea = await Idea.create({ ideaDescription: newIdeaDesc, ideaTitle: title, ideaCrits: ideaCrits, userId: userId });
 
@@ -101,22 +101,24 @@ exports.userBoostsCrits = async (req, res) => {
         if(!user){
             return res.status(400).json({message: 'User not found'});
         }
-        const userCritAmount = user.crits;
-        if(userCritAmount >= critAmount){
+        const userCritAmount = parseFloat(user.crits) || 0;
+        const spendAmount = parseFloat(critAmount) || 0;
+
+        if(userCritAmount >= spendAmount){
             //user has enough crits
-            const newCritAmount = userCritAmount - critAmount;
+            const newCritAmount = userCritAmount - spendAmount;
             const idea = await Idea.findOne({attributes: ['ideaCrits'], where: {id: ideaId}}); //get old idea crit amount
             if(!idea){
                 return res.status(400).json({message: 'Idea not found'});
             }
-            const ideaCritAmount = idea.ideaCrits;
-            const newIdeaCritAmount = ideaCritAmount + critAmount;
+            const ideaCritAmount = parseFloat(idea.ideaCrits) || 0;
+            const newIdeaCritAmount = ideaCritAmount + spendAmount;
             await User.update({crits: newCritAmount}, {where: {id: userId}}); //edit user to have less crits
             await Idea.update({ideaCrits: newIdeaCritAmount}, {where: {id: ideaId}}); //edit idea to have more crits
-            return res.status(201).json({message:'Boosted idea crits and subtracted user crit', userCritAmount: newCritAmount});
+            return res.status(201).json({message:'Boosted idea crits and subtracted user crit', userCritAmount: parseFloat(newCritAmount)});
         } else {
             //user does not have enough crits
-            return res.status(400).json({message: 'User does not have enough crits', userCritAmount: userCritAmount});
+            return res.status(400).json({message: 'User does not have enough crits', userCritAmount: parseFloat(userCritAmount)});
         }
 
     } catch (error) {

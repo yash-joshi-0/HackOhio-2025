@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Link, useNavigate } from 'react-router-dom';
 import Login from './components/login';
 import Signup from './components/signup';
@@ -16,11 +16,15 @@ const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userData, setUserData] = useState(null);
   const [crits, setCrits] = useState(5);
+  const [shake, setShake] = useState(false);
+  const [particles, setParticles] = useState([]);
+  const prevCritsRef = useRef(5);
 
   // Initialize crits on mount
   useEffect(() => {
     if (isLoggedIn && userData) {
-      setCrits(userData.crits || 0);
+      const numericCrits = typeof userData.crits === 'number' ? userData.crits : parseInt(userData.crits, 10) || 0;
+      setCrits(numericCrits);
     } else {
       setCrits(anonymousUser.getCrits());
     }
@@ -30,22 +34,79 @@ const App = () => {
     setIsLoggedIn(status);
     setUserData(data);
     if (status && data) {
-      setCrits(data.crits || 0);
+      const numericCrits = typeof data.crits === 'number' ? data.crits : parseInt(data.crits, 10) || 0;
+      setCrits(numericCrits);
     }
   };
 
   const updateCrits = (newCrits) => {
-    setCrits(newCrits);
-    if (!isLoggedIn) {
-      anonymousUser.setCrits(newCrits);
+    const numericCrits = typeof newCrits === 'number' ? newCrits : parseInt(newCrits, 10);
+
+    // Trigger shake and particles if crits increased
+    if (numericCrits > prevCritsRef.current) {
+      triggerCritAnimation();
     }
+
+    prevCritsRef.current = numericCrits;
+    setCrits(numericCrits);
+    if (!isLoggedIn) {
+      anonymousUser.setCrits(numericCrits);
+    }
+  };
+
+  const triggerCritAnimation = () => {
+    // Trigger shake
+    setShake(true);
+    setTimeout(() => setShake(false), 500);
+
+    // Create particles
+    const newParticles = Array.from({ length: 10 }, (_, i) => ({
+      id: Date.now() + i,
+      x: Math.random() * 100 - 50,
+      y: Math.random() * 100 - 50,
+    }));
+    setParticles(newParticles);
+    setTimeout(() => setParticles([]), 1000);
   };
 
   return (
     <Router>
+      <style>{`
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+          20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        .shake {
+          animation: shake 0.5s;
+        }
+        .particle {
+          position: fixed;
+          width: 8px;
+          height: 8px;
+          background: #ffc107;
+          border-radius: 50%;
+          pointer-events: none;
+          animation: particleFloat 1s ease-out forwards;
+          z-index: 9999;
+        }
+        @keyframes particleFloat {
+          0% {
+            transform: translate(0, 0) scale(1);
+            opacity: 1;
+          }
+          100% {
+            transform: translate(var(--tx), var(--ty)) scale(0);
+            opacity: 0;
+          }
+        }
+      `}</style>
       <div
+        className={shake ? 'shake' : ''}
         style={{
           minHeight: '100vh',
+          height: '100vh',
+          overflow: 'auto',
           backgroundImage:
             "url('https://cdn.architextures.org/textures/23/2/oak-veneermdf-none-rz7xim-1200.jpg')",
           backgroundSize: 'cover',
@@ -156,6 +217,20 @@ const App = () => {
             </div>
           </div>
         </nav>
+
+        {/* Particles */}
+        {particles.map((particle) => (
+          <div
+            key={particle.id}
+            className="particle"
+            style={{
+              left: '100px',
+              top: '50px',
+              '--tx': `${particle.x}px`,
+              '--ty': `${particle.y}px`,
+            }}
+          />
+        ))}
 
         {/* Routes */}
         <Routes>

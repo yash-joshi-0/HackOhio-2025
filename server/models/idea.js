@@ -11,8 +11,9 @@ const Idea = sequelize.define('Idea', {
         allowNull: false,
     },
     ideaCrits: {
-        type: DataTypes.DECIMAL,
+        type: DataTypes.FLOAT,
         allowNull: false,
+        defaultValue: 0,
     },
 });
 

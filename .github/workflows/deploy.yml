@@ -1,0 +1,72 @@
+name: Deploy to AWS
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build, tag, and push frontend image
+        working-directory: ./client
+        run: |
+          docker build -t protothought-frontend .
+          docker tag protothought-frontend:latest $ECR_REGISTRY/protothought-frontend:latest
+          docker tag protothought-frontend:latest $ECR_REGISTRY/protothought-frontend:${{ github.sha }}
+          docker push $ECR_REGISTRY/protothought-frontend:latest
+          docker push $ECR_REGISTRY/protothought-frontend:${{ github.sha }}
+
+      - name: Build, tag, and push backend image
+        working-directory: ./server
+        run: |
+          docker build -t protothought-backend .
+          docker tag protothought-backend:latest $ECR_REGISTRY/protothought-backend:latest
+          docker tag protothought-backend:latest $ECR_REGISTRY/protothought-backend:${{ github.sha }}
+          docker push $ECR_REGISTRY/protothought-backend:latest
+          docker push $ECR_REGISTRY/protothought-backend:${{ github.sha }}
+
+      - name: Build, tag, and push LLM image
+        working-directory: ./llm-service
+        run: |
+          docker build -t protothought-llm .
+          docker tag protothought-llm:latest $ECR_REGISTRY/protothought-llm:latest
+          docker tag protothought-llm:latest $ECR_REGISTRY/protothought-llm:${{ github.sha }}
+          docker push $ECR_REGISTRY/protothought-llm:latest
+          docker push $ECR_REGISTRY/protothought-llm:${{ github.sha }}
+
+      - name: Update ECS service
+        run: |
+          aws ecs update-service \
+            --cluster protothought-cluster \
+            --service protothought-service \
+            --force-new-deployment \
+            --region ${{ env.AWS_REGION }}
+
+      - name: Wait for service to stabilize
+        run: |
+          aws ecs wait services-stable \
+            --cluster protothought-cluster \
+            --services protothought-service \
+            --region ${{ env.AWS_REGION }}

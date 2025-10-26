@@ -7,6 +7,9 @@ const Ideas = ({ isLogin, userData, crits, updateCrits }) => {
     const [error, setError] = useState(null);
 
     const [newIdea, setNewIdea] = useState('');
+    const [showAIModal, setShowAIModal] = useState(false);
+    const [aiSummary, setAiSummary] = useState('');
+    const [aiLoading, setAiLoading] = useState(false);
 
     useEffect(() => {
         const fetchIdeas = async () => {
@@ -73,16 +76,8 @@ const Ideas = ({ isLogin, userData, crits, updateCrits }) => {
     };
 
     const handleBoostIdea = async (ideaId) => {
-        const boostAmount = prompt('How many crits would you like to spend on this idea?');
-        const critAmount = parseInt(boostAmount, 10);
-
-        if (!critAmount || critAmount <= 0) {
-            alert('Please enter a valid number of crits');
-            return;
-        }
-
-        if (critAmount > crits) {
-            alert(`You only have ${crits} crits available`);
+        if (crits < 1) {
+            alert('You need at least 1 crit to boost an idea');
             return;
         }
 
@@ -90,7 +85,7 @@ const Ideas = ({ isLogin, userData, crits, updateCrits }) => {
             const res = await fetch('/api/userboostscrit', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: userData.id, ideaId: ideaId, critAmount: critAmount }),
+                body: JSON.stringify({ userId: userData.id, ideaId: ideaId, critAmount: 1 }),
             });
 
             if (!res.ok) {
@@ -118,6 +113,38 @@ const Ideas = ({ isLogin, userData, crits, updateCrits }) => {
         }
     };
 
+    const handleAIHelp = async () => {
+        if (!aiSummary.trim()) {
+            alert('Please enter a summary');
+            return;
+        }
+
+        setAiLoading(true);
+        try {
+            const res = await fetch('/api/simplifyidea', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ summary: aiSummary }),
+            });
+
+            if (!res.ok) {
+                const data = await res.json();
+                alert(data.message || 'Failed to generate elevator pitch');
+                return;
+            }
+
+            const data = await res.json();
+            setNewIdea(data.elevator_pitch);
+            setShowAIModal(false);
+            setAiSummary('');
+        } catch (err) {
+            console.error(err);
+            alert('Failed to generate elevator pitch. Please try again.');
+        } finally {
+            setAiLoading(false);
+        }
+    };
+
     if (!isLogin) {
         return (
             <div className="container stores-container">
@@ -141,16 +168,60 @@ const Ideas = ({ isLogin, userData, crits, updateCrits }) => {
                             className="form-control"
                             placeholder="Share a new idea..."
                             value={newIdea}
-                            onChange={(e) => setNewIdea(e.target.value)}
+                            onChange={(e) => setNewIdea(e.target.value.slice(0, 70))}
                             aria-label="New idea"
+                            maxLength={70}
                         />
                         <span className="input-group-btn">
+                            <button
+                                className="btn btn-info"
+                                type="button"
+                                onClick={() => setShowAIModal(true)}
+                                style={{ marginRight: '5px' }}
+                            >
+                                AI Help
+                            </button>
                             <button className="btn btn-primary" type="submit" disabled={loading}>
                                 Add Idea
                             </button>
                         </span>
                     </div>
+                    <small className="text-muted">{newIdea.length}/70 characters</small>
                 </form>
+
+                {/* AI Help Modal */}
+                {showAIModal && (
+                    <div className="modal" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }} onClick={() => setShowAIModal(false)}>
+                        <div className="modal-dialog" onClick={(e) => e.stopPropagation()}>
+                            <div className="modal-content">
+                                <div className="modal-header">
+                                    <h5 className="modal-title">AI Idea Simplifier</h5>
+                                    <button type="button" className="close" onClick={() => setShowAIModal(false)}>
+                                        <span>&times;</span>
+                                    </button>
+                                </div>
+                                <div className="modal-body">
+                                    <p>Enter a detailed summary of your idea, and AI will create a concise elevator pitch:</p>
+                                    <textarea
+                                        className="form-control"
+                                        rows="5"
+                                        placeholder="Describe your idea in detail..."
+                                        value={aiSummary}
+                                        onChange={(e) => setAiSummary(e.target.value)}
+                                    />
+                                </div>
+                                <div className="modal-footer">
+                                    <button type="button" className="btn btn-secondary" onClick={() => setShowAIModal(false)}>
+                                        Cancel
+                                    </button>
+                                    <button type="button" className="btn btn-primary" onClick={handleAIHelp} disabled={aiLoading}>
+                                        {aiLoading ? 'Generating...' : 'Generate Pitch'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {loading && <p>Loading ideas...</p>}
                 {error && <p className="text-danger">{error}</p>}

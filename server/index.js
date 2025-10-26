@@ -4,6 +4,7 @@ const sequelize = require('./config/database');
 const authRoutes = require('./routes/authRoutes');
 const ideaRoutes = require('./routes/ideaRoutes');
 const voteRoutes = require('./routes/voteRoutes');
+const llmRoutes = require('./routes/llmRoutes');
 
 // Import models
 const User = require('./models/user');
@@ -24,6 +25,7 @@ app.use(express.json());
 app.use('/api', authRoutes);
 app.use('/api', ideaRoutes);
 app.use('/api', voteRoutes);
+app.use('/api', llmRoutes);
 
 const startServer = async () => {
   try {
