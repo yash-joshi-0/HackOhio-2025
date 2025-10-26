@@ -164,7 +164,7 @@ const App = () => {
                 left: '50%',
                 transform: 'translateX(-50%)',
                 color: 'black',
-                fontSize: 'clamp(28px, 2vw, 42px)',
+                fontSize: 'clamp(18px, 2vw, 42px)',
                 textDecoration: 'none',
                 letterSpacing: '0.05em',
               }}
