@@ -10,14 +10,12 @@ const Vote = sequelize.define('Vote', {
 
 Vote.associate = (models) => {
     Vote.belongsTo(models.User, {
-      foreignKey: "id",
-      onDelete: "CASCADE", // optional behavior
+      foreignKey: "userId",
+      onDelete: "CASCADE",
     });
-};
-Vote.associate = (models) => {
     Vote.belongsTo(models.Idea, {
-      foreignKey: "id",
-      onDelete: "CASCADE", // optional behavior
+      foreignKey: "ideaId",
+      onDelete: "CASCADE",
     });
 };
 

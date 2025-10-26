@@ -13,14 +13,12 @@ const Idea = sequelize.define('Idea', {
 });
 
 Idea.associate = (models) => {
-    Idea.belongsTo(models.user, {
-      foreignKey: "id",
-      onDelete: "CASCADE", // optional behavior
+    Idea.belongsTo(models.User, {
+      foreignKey: "userId",
+      onDelete: "CASCADE",
     });
-};
-Idea.associate = (models) => {
     Idea.hasMany(models.Vote, {
-      foreignKey: "id",
+      foreignKey: "ideaId",
     });
 };
 

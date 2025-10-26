@@ -1,6 +1,7 @@
 const Idea = require('../models/idea');
 const Vote = require('../models/vote');
 const User = require('../models/user');
+const { Sequelize } = require('sequelize');
 
 // create Idea
 exports.createIdea = async (req, res) => {
@@ -36,15 +37,15 @@ exports.getTopIdeaForUser = async (req, res) => {
 exports.deleteIdea = async (req, res) => {
     const { ideaId } = req.body;
     try {
-        const check = await Idea.findOne({where: {ideaId: ideaId}});
+        const check = await Idea.findOne({where: {id: ideaId}});
         if(check){ //make sure idea exists
-            await Idea.destroy({ where: { ideaId: ideaId } });
+            await Idea.destroy({ where: { id: ideaId } });
             res.status(201).json({ message: 'Idea delete successful'});
         }
         else {
             res.status(400).json({message:'Idea does not exist'});
         }
-        
+
 
     } catch (error) {
         console.error('Error deleting idea:', error);
@@ -55,23 +56,31 @@ exports.deleteIdea = async (req, res) => {
 exports.userBoostsCrits = async (req, res) => {
     const { userId, ideaId, critAmount } = req.body;
     try {
-        // Check if user as enough crits
-        const userCritAmount = await User.findOne({attributes: [crits], where: {userId: userId}});
+        // Check if user has enough crits
+        const user = await User.findOne({attributes: ['crits'], where: {id: userId}});
+        if(!user){
+            return res.status(400).json({message: 'User not found'});
+        }
+        const userCritAmount = user.crits;
         if(userCritAmount >= critAmount){
             //user has enough crits
             const newCritAmount = userCritAmount - critAmount;
-            const ideaCritAmount = await Idea.findOne({attributes: [ideaCrits], where: {ideaId: ideaId}}); //get old idea crit amount
+            const idea = await Idea.findOne({attributes: ['ideaCrits'], where: {id: ideaId}}); //get old idea crit amount
+            if(!idea){
+                return res.status(400).json({message: 'Idea not found'});
+            }
+            const ideaCritAmount = idea.ideaCrits;
             const newIdeaCritAmount = ideaCritAmount + critAmount;
-            await User.update({crits: newCritAmount}, {where: {userId: userId}}); //edit user to have less crits
-            await Idea.update({ideaCrits: newIdeaCritAmount}, {where: {ideaId: ideaId}}); //edit idea to have more crits
-            return res.status(201).json({message:'Boosted idea crits and subtracted user crit'},{userCritAmount: newCritAmount});
+            await User.update({crits: newCritAmount}, {where: {id: userId}}); //edit user to have less crits
+            await Idea.update({ideaCrits: newIdeaCritAmount}, {where: {id: ideaId}}); //edit idea to have more crits
+            return res.status(201).json({message:'Boosted idea crits and subtracted user crit', userCritAmount: newCritAmount});
         } else {
             //user does not have enough crits
-            return res.status(400).json({message: 'User does not have enough crits'},{userCritAmount: userCritAmount});
+            return res.status(400).json({message: 'User does not have enough crits', userCritAmount: userCritAmount});
         }
 
     } catch (error) {
-        console.error('Error deleting idea:', error);
+        console.error('Error boosting crits:', error);
         res.status(500).json({ message: 'Server error' });
     }
 };
@@ -80,36 +89,45 @@ exports.getIdeasWithVotesFromUser = async (req, res) => {
     const { userId } = req.body;
         try {
             const ideas = await Idea.findAll({
-                where: { user_id: userId },
-                    attributes: {
-                        include: [
-                            // Count of likes
-                            [
-                                Sequelize.fn("SUM", Sequelize.literal(`CASE WHEN Votes.isLike = true THEN 1 ELSE 0 END`)),
-                                "likeCount"
-                            ],
-                            // Count of dislikes
-                            [
-                                Sequelize.fn("SUM", Sequelize.literal(`CASE WHEN Votes.isLike = false THEN 1 ELSE 0 END`)),
-                                "dislikeCount"
-                            ]
+                where: { userId: userId },
+                attributes: {
+                    // This will include all default Idea attributes
+                    // and add the following two counts:
+                    include: [
+                        // Count of likes
+                        [
+                            // Use COALESCE to turn NULL (no votes) into 0
+                            Sequelize.fn("COALESCE",
+                                Sequelize.fn("SUM", Sequelize.literal(`CASE WHEN "Votes"."isLike" = true THEN 1 ELSE 0 END`)),
+                                0 // Value to use if the SUM is NULL
+                            ),
+                            "likeCount"
                         ],
-                    },
+                        // Count of dislikes
+                        [
+                            Sequelize.fn("COALESCE",
+                                Sequelize.fn("SUM", Sequelize.literal(`CASE WHEN "Votes"."isLike" = false THEN 1 ELSE 0 END`)),
+                                0
+                            ),
+                            "dislikeCount"
+                        ]
+                    ],
+                },
                 include: [
                     {
                         model: Vote,
-                        attributes: [], // we only want aggregated counts, not individual votes
+                        attributes: [], // We don't want individual vote rows
                     },
                 ],
-                group: ["Idea.ideaId"],
-                //order: [["ideaCrits", "DESC"]], //can be re added if we need the list sorted by highest first
-                raw: true,
+                group: ["Idea.id"], // Group by the Idea's primary key
+                raw: true, // Helpful for GROUP queries
             });
-            if (!ideas) {
-                return res.status(400).json({ message: 'No ideas for user found' });
+
+            if (!ideas || ideas.length === 0) {
+                return res.status(200).json({ message: 'No ideas for user found', ideas: [] });
             }
-    
-            return res.status(200).json({ message: 'Found ideas'}, {ideas: ideas});
+
+            return res.status(200).json({ message: 'Found ideas', ideas: ideas });
         } catch (error) {
             console.error('Error finding idea', error);
             res.status(500).json({ message: 'Server error' });

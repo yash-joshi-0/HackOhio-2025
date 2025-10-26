@@ -48,9 +48,17 @@ const Ideas = ({ isLogin, userData }) => {
                 const errText = await res.text();
                 throw new Error(errText || 'Failed to create idea');
             }
-            const created = await res.json();
-            setIdeas(prev => [created, ...prev]);
             setNewIdea('');
+            // Refetch ideas to get updated list with vote counts
+            const fetchRes = await fetch('/api/getIdeasWithVotesFromUser', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: userData.id }),
+            });
+            if (fetchRes.ok) {
+                const data = await fetchRes.json();
+                setIdeas(data.ideas || []);
+            }
         } catch (err) {
             console.error(err);
             setError('Could not create idea');
@@ -91,16 +99,23 @@ const Ideas = ({ isLogin, userData }) => {
                 {!loading && ideas.length === 0 && <p>No ideas found.</p>}
 
                 {ideas.map((idea) => (
-                    <div key={idea.id || idea._id} className="panel panel-default">
+                    <div key={idea.id} className="panel panel-default" style={{ marginBottom: '15px' }}>
                         <div className="panel-body">
-                            <h4 className="panel-title">{idea.title || idea.text || 'Untitled'}</h4>
-                            <ul className="list-group" style={{ marginTop: '10px', marginBottom: 0 }}>
-                                {idea.stores && idea.stores.map(store => (
-                                    <li key={store.id} className="list-group-item" style={{ border: 'none', padding: '5px 15px' }}>
-                                        {store.name}
-                                    </li>
-                                ))}
-                            </ul>
+                            <p style={{ fontSize: '16px', marginBottom: '10px' }}>{idea.ideaDescription}</p>
+                            <div style={{ display: 'flex', gap: '15px', alignItems: 'center', fontSize: '14px', color: '#666' }}>
+                                <span>
+                                    <i className="fas fa-thumbs-up" style={{ marginRight: '5px', color: '#28a745' }}></i>
+                                    {idea.likeCount || 0} likes
+                                </span>
+                                <span>
+                                    <i className="fas fa-thumbs-down" style={{ marginRight: '5px', color: '#dc3545' }}></i>
+                                    {idea.dislikeCount || 0} dislikes
+                                </span>
+                                <span>
+                                    <i className="fas fa-bolt" style={{ marginRight: '5px', color: '#ffc107' }}></i>
+                                    {idea.ideaCrits} crits
+                                </span>
+                            </div>
                         </div>
                     </div>
                 ))}
