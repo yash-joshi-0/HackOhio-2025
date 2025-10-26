@@ -6,5 +6,6 @@ router.post('/createidea', ideaController.createIdea);
 router.post('/deleteidea', ideaController.deleteIdea);
 router.post('/gettopideaforuser', ideaController.getTopIdeaForUser);
 router.post('/userboostscrit', ideaController.userBoostsCrits);
+router.post('/getIdeasWithVotesFromUser', ideasController.getIdeasWithVotesFromUser);
 
 module.exports = router;

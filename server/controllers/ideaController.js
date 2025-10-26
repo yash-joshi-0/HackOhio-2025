@@ -39,7 +39,7 @@ exports.getTopIdeaForUser = async (req, res) => {
                 return res.status(400).json({ message: 'Next unvoted idea not found' });
             }
     
-            res.status(200).json({ message: 'Found idea'}, {idea: idea});
+            return res.status(200).json({ message: 'Found idea', idea: idea});
         } catch (error) {
             console.error('Error finding idea', error);
             res.status(500).json({ message: 'Server error' });
@@ -83,9 +83,48 @@ exports.userBoostsCrits = async (req, res) => {
             return res.status(400).json({message: 'User does not have enough crits'},{userCritAmount: userCritAmount});
         }
 
-        res.status(201).json({ message: 'Idea delete successful', user: { id: newUser.id, username: newUser.username } });
     } catch (error) {
         console.error('Error deleting idea:', error);
         res.status(500).json({ message: 'Server error' });
     }
 };
+
+exports.getIdeasWithVotesFromUser = async (req, res) => {
+    const { userId } = req.body;
+        try {
+            const ideas = await Idea.findAll({
+                where: { user_id: userId },
+                    attributes: {
+                        include: [
+                            // Count of likes
+                            [
+                                Sequelize.fn("SUM", Sequelize.literal(`CASE WHEN Votes.isLike = true THEN 1 ELSE 0 END`)),
+                                "likeCount"
+                            ],
+                            // Count of dislikes
+                            [
+                                Sequelize.fn("SUM", Sequelize.literal(`CASE WHEN Votes.isLike = false THEN 1 ELSE 0 END`)),
+                                "dislikeCount"
+                            ]
+                        ],
+                    },
+                include: [
+                    {
+                        model: Vote,
+                        attributes: [], // we only want aggregated counts, not individual votes
+                    },
+                ],
+                group: ["Idea.ideaId"],
+                //order: [["ideaCrits", "DESC"]], //can be re added if we need the list sorted by highest first
+                raw: true,
+            });
+            if (!ideas) {
+                return res.status(400).json({ message: 'No ideas for user found' });
+            }
+    
+            return res.status(200).json({ message: 'Found ideas'}, {ideas: ideas});
+        } catch (error) {
+            console.error('Error finding idea', error);
+            res.status(500).json({ message: 'Server error' });
+        }
+}
