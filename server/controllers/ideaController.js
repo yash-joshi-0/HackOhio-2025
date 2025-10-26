@@ -19,7 +19,7 @@ exports.createIdea = async (req, res) => {
 
 exports.getTopIdeaForUser = async (req, res) => {
     const { userId } = req.body;
-        try {/*
+        try {
             const idea = await Idea.findOne({
                 include: [ //this creates a left join on idea with vote
                    {
@@ -38,7 +38,6 @@ exports.getTopIdeaForUser = async (req, res) => {
             if (!idea) {
                 return res.status(400).json({ message: 'Next unvoted idea not found' });
             }
-    */idea = "test idea";
             return res.status(200).json({ message: 'Found idea', idea: idea});
         } catch (error) {
             console.error('Error finding idea', error);

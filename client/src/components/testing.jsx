@@ -21,8 +21,7 @@ const Ideas = ({ onLoginSuccess }) => {
                 setLoading(false);
             }
         };
-    }, [message]);
-};
+    });
 
     return (
             <div className="container stores-container">

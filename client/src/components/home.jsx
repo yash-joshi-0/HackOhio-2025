@@ -15,20 +15,33 @@ const Home = ({ isLogin, userData }) => {
   }, [isLogin]);
 
   const fetchTopIdea = async () => {
-    console.log('Fetching top idea for user:', userData.id);
+    if (!userData?.id) return;
+
     try {
-      const response = await fetch('/api/gettopideaforuser', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ userId: userData.id })
+        const response = await fetch('/api/gettopideaforuser', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: userData.id }),
         });
-      setTopIdea(response.data);
+
+        const data = await response.json();
+
+        if (response.ok && data.idea) {
+        // Wrap string in object so sticky note code works
+        setTopIdea({
+            id: data.idea.id || 0,           // or use 0 if not available
+            ideaDescription: data.idea.ideaDescription || data.idea, // if it's a string
+        });
+        } else {
+        console.error('Error fetching top idea:', data.message || 'No idea returned');
+        setTopIdea(null);
+        }
     } catch (error) {
-      console.error('Error fetching top idea:', error);
+        console.error('Error fetching top idea:', error);
+        setTopIdea(null);
     }
   };
+
 
   const handleVote = async (isLike) => {
         try {
