@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
-const Ideas = ({ isLogin, userData }) => {
+const Ideas = ({ isLogin, userData, crits, updateCrits }) => {
     const [ideas, setIdeas] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -10,6 +10,11 @@ const Ideas = ({ isLogin, userData }) => {
 
     useEffect(() => {
         const fetchIdeas = async () => {
+            if (!isLogin || !userData?.id) {
+                setLoading(false);
+                return;
+            }
+
             try {
                 const res = await fetch('/api/getIdeasWithVotesFromUser', {
                 method: 'POST',
@@ -31,7 +36,7 @@ const Ideas = ({ isLogin, userData }) => {
         };
 
         fetchIdeas();
-    }, []);
+    }, [isLogin, userData]);
 
     const handleCreateIdea = async (e) => {
         e.preventDefault();
@@ -67,13 +72,66 @@ const Ideas = ({ isLogin, userData }) => {
         }
     };
 
+    const handleBoostIdea = async (ideaId) => {
+        const boostAmount = prompt('How many crits would you like to spend on this idea?');
+        const critAmount = parseInt(boostAmount, 10);
+
+        if (!critAmount || critAmount <= 0) {
+            alert('Please enter a valid number of crits');
+            return;
+        }
+
+        if (critAmount > crits) {
+            alert(`You only have ${crits} crits available`);
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/userboostscrit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: userData.id, ideaId: ideaId, critAmount: critAmount }),
+            });
+
+            if (!res.ok) {
+                const data = await res.json();
+                alert(data.message || 'Failed to boost idea');
+                return;
+            }
+
+            const data = await res.json();
+            updateCrits(data.userCritAmount);
+
+            // Refetch ideas to show updated crit counts
+            const fetchRes = await fetch('/api/getIdeasWithVotesFromUser', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: userData.id }),
+            });
+            if (fetchRes.ok) {
+                const ideasData = await fetchRes.json();
+                setIdeas(ideasData.ideas || []);
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Failed to boost idea');
+        }
+    };
+
+    if (!isLogin) {
+        return (
+            <div className="container stores-container">
+                <div className="alert alert-warning text-center mt-5">
+                    Please sign in to view your ideas.
+                </div>
+            </div>
+        );
+    }
+
     return (
             <div className="container stores-container">
                 <div className="page-header">
-                    <a href="/newroute" className="btn btn-primary pull-right">
-                        <span className="glyphicon glyphicon-plus"></span>
-                    </a>
-                    <h1 className="h3">Ideas</h1>
+                    <h1 className="h3">Your Ideas</h1>
                 </div>
 
                 <form onSubmit={handleCreateIdea} style={{ marginBottom: 16 }}>
@@ -111,9 +169,17 @@ const Ideas = ({ isLogin, userData }) => {
                                     <i className="fas fa-thumbs-down" style={{ marginRight: '5px', color: '#dc3545' }}></i>
                                     {idea.dislikeCount || 0} dislikes
                                 </span>
-                                <span>
+                                <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                                     <i className="fas fa-bolt" style={{ marginRight: '5px', color: '#ffc107' }}></i>
-                                    {idea.ideaCrits} crits
+                                    {Math.round(idea.ideaCrits * 10) / 10} crits
+                                    <button
+                                        onClick={() => handleBoostIdea(idea.id)}
+                                        className="btn btn-sm btn-warning"
+                                        style={{ marginLeft: '5px', padding: '2px 8px', fontSize: '12px' }}
+                                        title="Boost this idea with crits"
+                                    >
+                                        +
+                                    </button>
                                 </span>
                             </div>
                         </div>

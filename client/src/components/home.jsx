@@ -1,40 +1,57 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import { anonymousUser } from '../utils/anonymousUser';
 
-const Home = ({ isLogin, userData }) => {
+const Home = ({ isLogin, userData, crits, updateCrits }) => {
     const [topIdea, setTopIdea] = useState(null);
     const topNoteRef = useRef(null);
     const bottomNoteRef = useRef(null);
 
-  // Fetch the top idea if user is logged in
+  // Fetch the top idea (works for both logged in and anonymous users)
   useEffect(() => {
-    console.log(isLogin);
-    if (isLogin) {
-      fetchTopIdea();
-    }
+    fetchTopIdea();
   }, [isLogin]);
 
   const fetchTopIdea = async () => {
-    if (!userData?.id) return;
-
     try {
-        const response = await fetch('/api/gettopideaforuser', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: userData.id }),
-        });
+        if (isLogin && userData?.id) {
+          // Fetch for logged-in user
+          const response = await fetch('/api/gettopideaforuser', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: userData.id }),
+          });
 
-        const data = await response.json();
+          const data = await response.json();
 
-        if (response.ok && data.idea) {
-        // Wrap string in object so sticky note code works
-        setTopIdea({
-            id: data.idea.id || 0,           // or use 0 if not available
-            ideaDescription: data.idea.ideaDescription || data.idea, // if it's a string
-        });
+          if (response.ok && data.idea) {
+            setTopIdea({
+              id: data.idea.id || 0,
+              ideaDescription: data.idea.ideaDescription || data.idea,
+            });
+          } else {
+            console.error('Error fetching top idea:', data.message || 'No idea returned');
+            setTopIdea(null);
+          }
         } else {
-        console.error('Error fetching top idea:', data.message || 'No idea returned');
-        setTopIdea(null);
+          // Fetch for anonymous user - get idea with highest crits that they haven't voted on
+          const response = await fetch('/api/gettopideaforanonymous', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ votedIdeaIds: anonymousUser.getVotes().map(v => v.ideaId) }),
+          });
+
+          const data = await response.json();
+
+          if (response.ok && data.idea) {
+            setTopIdea({
+              id: data.idea.id || 0,
+              ideaDescription: data.idea.ideaDescription || data.idea,
+            });
+          } else {
+            console.error('Error fetching top idea:', data.message || 'No idea returned');
+            setTopIdea(null);
+          }
         }
     } catch (error) {
         console.error('Error fetching top idea:', error);
@@ -45,27 +62,48 @@ const Home = ({ isLogin, userData }) => {
 
   const handleVote = async (isLike) => {
         try {
-          const response = await fetch('/api/createvote', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          userId: userData.id,
-          ideaId: topIdea.id,
-          isLike: isLike,
-        }),
-        });
+          if (isLogin && userData?.id) {
+            // Logged in user voting
+            const response = await fetch('/api/createvote', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                userId: userData.id,
+                ideaId: topIdea.id,
+                isLike: isLike,
+              }),
+            });
 
-        const data = await response.json();
+            const data = await response.json();
 
-        if (response.ok && data.idea) {
+            if (response.ok) {
+              // Update crits if user gained one
+              if (data.userGainedCrit) {
+                console.log(`You gained a crit! Total: ${data.userCrits}`);
+                updateCrits(data.userCrits);
+              }
 
-        } else {
-        console.error('Error voting:', data.message || 'No vote');
+              // Fetch the next idea
+              fetchTopIdea();
+            } else {
+              console.error('Error voting:', data.message || 'No vote');
+            }
+          } else {
+            // Anonymous user voting
+            anonymousUser.addVote(topIdea.id, isLike);
 
-        }
+            // 10% chance to gain a crit
+            if (Math.random() < 0.10) {
+              const newCrits = crits + 1;
+              updateCrits(newCrits);
+              console.log(`You gained a crit! Total: ${newCrits}`);
+            }
+
+            // Fetch the next idea
+            fetchTopIdea();
+          }
     } catch (error) {
         console.error('Error voting:', error);
-
     }
     };
 

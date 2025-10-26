@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { anonymousUser } from '../utils/anonymousUser';
 
 const Login = ({ onLoginSuccess }) => {
     const [username, setUsername] = useState('');
@@ -23,11 +24,38 @@ const Login = ({ onLoginSuccess }) => {
                 },
                 body: JSON.stringify({ username, password }),
             });
-            
+
             const data = await response.json();
             setMessage(data.message);
             if (response.ok) {
                 console.log('Login successful!');
+
+                // Merge anonymous data if exists
+                const anonymousData = anonymousUser.getAllData();
+                if (anonymousData.votes.length > 0 || anonymousData.crits > 5) {
+                    try {
+                        const mergeResponse = await fetch('/api/mergeanonymousdata', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                userId: data.user.id,
+                                anonymousVotes: anonymousData.votes,
+                                anonymousCrits: anonymousData.crits - 5 // Only add the earned crits
+                            }),
+                        });
+
+                        if (mergeResponse.ok) {
+                            const mergeData = await mergeResponse.json();
+                            console.log(`Merged ${mergeData.votesAdded} votes and ${anonymousData.crits - 5} crits`);
+                            // Update user data with new crit count
+                            data.user.crits = mergeData.newCrits;
+                            anonymousUser.clear();
+                        }
+                    } catch (mergeError) {
+                        console.error('Error merging anonymous data:', mergeError);
+                    }
+                }
+
                 onLoginSuccess(data.user);
             }
         } catch (error) {

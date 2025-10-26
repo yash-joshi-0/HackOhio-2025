@@ -7,7 +7,7 @@ const { Sequelize } = require('sequelize');
 exports.createIdea = async (req, res) => {
     const { newIdeaDesc, userId } = req.body;
     try {
-        const ideaCrits = 0
+        const ideaCrits = 5
 
         const newIdea = await Idea.create({ ideaDescription: newIdeaDesc, ideaCrits: ideaCrits, userId: userId });
 
@@ -21,9 +21,49 @@ exports.createIdea = async (req, res) => {
 exports.getTopIdeaForUser = async (req, res) => {
     const { userId } = req.body;
         try {
+            // Get all ideas the user has voted on
+            const votedIdeaIds = await Vote.findAll({
+                where: { userId: userId },
+                attributes: ['ideaId'],
+                raw: true
+            });
+
+            const votedIds = votedIdeaIds.map(vote => vote.ideaId);
+
+            // Find the highest crit idea that:
+            // 1. User hasn't voted on
+            // 2. User doesn't own
             const idea = await Idea.findOne({
+                where: {
+                    userId: { [Sequelize.Op.ne]: userId }, // Not owned by user
+                    id: { [Sequelize.Op.notIn]: votedIds.length > 0 ? votedIds : [-1] }, // Not voted on by user
+                    ideaCrits: { [Sequelize.Op.gt]: 0 } // Has crits remaining
+                },
                 order: [["ideaCrits", "DESC"]],
             });
+
+            if (!idea) {
+                return res.status(400).json({ message: 'Next unvoted idea not found' });
+            }
+            return res.status(200).json({ message: 'Found idea', idea: idea});
+        } catch (error) {
+            console.error('Error finding idea', error);
+            res.status(500).json({ message: 'Server error' });
+        }
+}
+
+exports.getTopIdeaForAnonymous = async (req, res) => {
+    const { votedIdeaIds } = req.body;
+        try {
+            // Find the highest crit idea that anonymous user hasn't voted on
+            const idea = await Idea.findOne({
+                where: {
+                    id: { [Sequelize.Op.notIn]: votedIdeaIds.length > 0 ? votedIdeaIds : [-1] }, // Not voted on
+                    ideaCrits: { [Sequelize.Op.gt]: 0 } // Has crits remaining
+                },
+                order: [["ideaCrits", "DESC"]],
+            });
+
             if (!idea) {
                 return res.status(400).json({ message: 'Next unvoted idea not found' });
             }
