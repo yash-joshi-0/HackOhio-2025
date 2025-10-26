@@ -3,6 +3,8 @@ import axios from 'axios';
 
 const Home = ({ isLogin, userData }) => {
     const [topIdea, setTopIdea] = useState(null);
+    const topNoteRef = useRef(null);
+    const bottomNoteRef = useRef(null);
 
   // Fetch the top idea if user is logged in
   useEffect(() => {
@@ -13,13 +15,19 @@ const Home = ({ isLogin, userData }) => {
   }, [isLogin]);
 
   const fetchTopIdea = async () => {
-    /* try {
-      const response = await axios.get('/api/ideas/getTopIdeaForUser');
+    console.log('Fetching top idea for user:', userData.id);
+    try {
+      const response = await fetch('/api/gettopideaforuser', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ userId: userData.id })
+        });
       setTopIdea(response.data);
     } catch (error) {
       console.error('Error fetching top idea:', error);
-    } */
-    topIdea = "This is a sample idea description to demonstrate the sticky note functionality. Peel me off to see more!";
+    }
   };
 
   const handleVote = async (isLike) => {
