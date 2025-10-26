@@ -45,15 +45,28 @@ const Home = ({ isLogin, userData }) => {
 
   const handleVote = async (isLike) => {
         try {
-            await axios.post('/api/votes/createvote', {
-                userId: userData.id,
-                ideaId: topIdea.id,
-                isLike
-            });
-            fetchTopIdea(); // Refresh the idea after voting
-        } catch (error) {
-            console.error('Error voting:', error);
+          const response = await fetch('/api/createvote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          userId: userData.id,
+          ideaId: topIdea.id,
+          isLike: isLike,
+        }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.idea) {
+
+        } else {
+        console.error('Error voting:', data.message || 'No vote');
+
         }
+    } catch (error) {
+        console.error('Error voting:', error);
+
+    }
     };
 
   // Initialize peeling sticky note behavior
@@ -144,8 +157,15 @@ const Home = ({ isLogin, userData }) => {
 
       if(Math.abs(dx) > DRAG_THRESHOLD){
         const direction = dx > 0 ? 'right' : 'left';
+        if(direction == "left") {
+          handleVote(false);
+        } else {
+          handleVote(true);
+        }
         console.log(`Sticky note peeled ${direction}`);
-        setTimeout(() => console.log('Direction reset'), 1000);
+        setTimeout(() => {
+          console.log('Direction reset');        
+        }, 1000);
 
         topNote.style.transition = 'transform 1s ease, opacity 0.3s ease';
         topNote.style.transform = `translateX(${dx*2}px) rotate(${dx/5}deg)`;
@@ -159,7 +179,10 @@ const Home = ({ isLogin, userData }) => {
       } else {
         topNote.style.transition = 'transform 0.3s ease';
         topNote.style.transform = 'rotate(0) translateX(0)';
-        setTimeout(()=> topNote.style.transition = '', 350);
+        setTimeout(()=> {
+          topNote.style.transition = ''
+
+        }, 350);
       }
     }
 

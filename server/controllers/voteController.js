@@ -6,10 +6,11 @@ const User = require('../models/user');
 exports.createVote = async (req, res) => {
     const { userId, ideaId, isLike } = req.body;
     try {
-        const ideaOwner = await Idea.findOne({attributes: [userId]}, {where: {ideaId: ideaId}}); //get owner of idea
+        /*const ideaOwner = await Idea.findOne({attributes: [userId], where: {ideaId: ideaId}}); //get owner of idea
         if(userId != ideaOwner){ //ensure the person leaving the vote does not own the idea
-            const newVote = await Vote.create({userId: userId}, {ideaId: ideaId}, {isLike: isLike}); //creates their vote
-            let ideaLosesCrit = false;
+            */
+           const newVote = await Vote.create({userId: userId, ideaId: ideaId, isLike: isLike}); //creates their vote
+           /* let ideaLosesCrit = false;
             let userGainsCrit = true;
             let userCrits = await User.findOne({attributes: ['crits']}, {where: {userId: userId}});
 
@@ -23,15 +24,15 @@ exports.createVote = async (req, res) => {
                 userCrits = userCrits - 1;
                 await User.update({crits: userCrits},{where: {userId: userId}});
                 userGainsCrit = true;
-            }
-            res.status(200).json({message: "Successfully created vote", userCrits: userCrits, userGainsCrit: userGainsCrit, ideaLosesCrit: ideaLosesCrit});
+            }*/
+            res.status(200).json({message: "Successfully created vote"/*, userCrits: userCrits, userGainsCrit: userGainsCrit, ideaLosesCrit: ideaLosesCrit*/});
             
-        } else{ //userid equals owner of idea. not allowed
-            res.status(400).json({ message: 'User cannot leave a vote on their own idea' });
-        }
+        //} else{ //userid equals owner of idea. not allowed
+        //    res.status(400).json({ message: 'User cannot leave a vote on their own idea' });
+        //}
         
     } catch (error) {
-        console.error('Create idea error:', error);
+        console.error('Create vote error:', error);
         res.status(500).json({ message: 'Server error' });
     }
 };
