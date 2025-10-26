@@ -37,7 +37,7 @@ const Signup = ({ onLoginSuccess }) => {
     };
 
     return (
-        <div className="bg-light position-relative" style={{ minHeight: '100vh' }}>
+        <div className="position-relative" style={{ minHeight: '100vh' }}>
             <style>{`
                 .slide-alert {
                     position: absolute;

@@ -305,25 +305,6 @@ const Home = ({ isLogin, userData }) => {
           </div>
         )}
       </div>
-
-      <div className="container mt-3">
-        <h1 className="text-center">Welcome to Punchfast</h1>
-        {isLogin ? (
-          <>
-            <div className="alert alert-success text-center mt-4">
-              You are signed in {userData?.username}.
-            </div>
-            {topIdea && (
-              <div className="d-flex justify-content-center gap-2 mt-2">
-                <button className="btn btn-success" onClick={() => { if (topIdea) handleVote(true, topIdea.id); }}>Like</button>
-                <button className="btn btn-danger" onClick={() => { if (topIdea) handleVote(false, topIdea.id); }}>Dislike</button>
-              </div>
-            )}
-          </>
-        ) : (
-          <div className="alert alert-warning text-center mt-4">You are not signed in.</div>
-        )}
-      </div>
     </div>
   );
 };
